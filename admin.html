@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>R1 管理后台</title>
+<style>
+body{font-family:Arial;padding:20px;background:#0d0f14;color:#e2e4ec}
+textarea{width:100%;height:200px;background:#111;color:#0f0;border:1px solid #333;padding:10px}
+button{padding:10px 20px;background:#4ec994;border:none;color:#000;font-weight:bold;cursor:pointer}
+</style>
+</head>
+<body>
+
+<h2>R1 数据上传后台</h2>
+<p>粘贴 TradingView CSV 数据：</p>
+
+<textarea id="csv" placeholder="Ticker,Name,评分,突破状态,蓄力天数,RS上升%,ATR收缩比,横盘幅度%,Fib回调%,硬性通过"></textarea>
+<br><br>
+<button onclick="upload()">上传到云端</button>
+
+<script>
+const BIN_ID = "69cf3483856a682189f588af";
+const MASTER_KEY = "$2a$10$PuJkRUSbxWMAhMvnoQATFubuWEg3rEWSse.awDnLMZ64UeaiiS2aK";
+
+let stocks = [];
+
+function parseCSV(){
+  const raw = document.getElementById("csv").value.trim();
+  stocks = [];
+
+  raw.split("\n").forEach((line,i)=>{
+    if(i==0) return;
+
+    const p = line.split(",");
+    if(p.length < 9) return;
+
+    stocks.push({
+      ticker:p[0],
+      name:p[1],
+      score:parseFloat(p[2]),
+      status:parseInt(p[3]),
+      days:parseInt(p[4]),
+      rs:parseFloat(p[5]),
+      atr:parseFloat(p[6]),
+      box:parseFloat(p[7]),
+      fib:parseFloat(p[8]),
+      hard:parseInt(p[9])
+    });
+  });
+}
+
+async function upload(){
+  parseCSV();
+
+  const payload = {
+    stocks: stocks,
+    updated: new Date().toISOString()
+  };
+
+  await fetch("https://api.jsonbin.io/v3/b/"+BIN_ID,{
+    method:"PUT",
+    headers:{
+      "Content-Type":"application/json",
+      "X-Master-Key":MASTER_KEY
+    },
+    body:JSON.stringify(payload)
+  });
+
+  alert("上传成功！");
+}
+</script>
+</body>
+</html>
