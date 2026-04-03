@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>R1 蓄力股票池</title>
+  <style>
+    body{font-family:Arial;padding:20px;background:#0d0f14;color:#e2e4ec}
+    table{border-collapse:collapse;width:100%}
+    th,td{border-bottom:1px solid #333;padding:8px;text-align:left}
+    th{color:#9da3b8}
+    h2{color:#4ec994}
+  </style>
+</head>
+<body>
+
+<h2>R1 蓄力股票池</h2>
+<p id="update"></p>
+
+<table>
+<thead>
+<tr>
+<th>代码</th><th>名称</th><th>评分</th><th>状态</th>
+<th>Fib</th><th>横盘</th><th>天数</th><th>RS</th><th>ATR</th>
+</tr>
+</thead>
+<tbody id="tbl"></tbody>
+</table>
+
+<script>
+const BIN_ID = "69cf3483856a682189f588af";
+
+async function load(){
+  try{
+    const r = await fetch("https://api.jsonbin.io/v3/b/" + BIN_ID + "/latest");
+    const d = await r.json();
+    const data = d.record.stocks || [];
+
+    document.getElementById("update").innerText =
+      "更新时间: " + (d.record.updated || "");
+
+    let html = "";
+    data.forEach(s=>{
+      html += `<tr>
+        <td>${s.ticker}</td>
+        <td>${s.name}</td>
+        <td>${s.score}</td>
+        <td>${s.status==1?"突破中":"蓄力中"}</td>
+        <td>${s.fib}</td>
+        <td>${s.box}</td>
+        <td>${s.days}</td>
+        <td>${s.rs}</td>
+        <td>${s.atr}</td>
+      </tr>`;
+    });
+
+    document.getElementById("tbl").innerHTML = html;
+  }catch(e){
+    document.getElementById("update").innerText = "数据加载失败";
+  }
+}
+
+load();
+setInterval(load,60000);
+</script>
+
+</body>
+</html>
